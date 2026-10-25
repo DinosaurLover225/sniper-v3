@@ -1,0 +1,48 @@
+name: Build SolSniper
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          if (Test-Path requirements.txt) { pip install -r requirements.txt }
+          pip install -r requirements-extra.txt
+          pip install pyinstaller
+
+      - name: Build exe
+        shell: pwsh
+        run: |
+          $args = @("--noconfirm","--onefile","--windowed","--name","SolSniper",
+                    "--hidden-import","win32timezone","--hidden-import","win11toast")
+          if (Test-Path join_button.png) { $args += @("--add-data","join_button.png;.") }
+          if (Test-Path icon.ico)        { $args += @("--icon","icon.ico") }
+          pyinstaller @args main.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SolSniper-windows
+          path: dist/SolSniper.exe
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/SolSniper.exe
