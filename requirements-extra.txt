@@ -1,0 +1,11 @@
+# Added for auto-join and FishSol pairing.
+# If the repo has no requirements.txt, also add the Discord package it uses
+# (check main.py's imports / README: it is likely discord.py-self) plus:
+# PyQt6, aiohttp, requests, websockets
+pyautogui
+opencv-python
+pillow
+pynput
+psutil
+pywin32
+win11toast
